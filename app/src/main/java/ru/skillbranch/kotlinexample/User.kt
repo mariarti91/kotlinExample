@@ -65,7 +65,7 @@ class User private constructor(
 
         phone = rawPhone
 
-        if(!phone.isNullOrBlank() && phone!!.length != 12) throw IllegalArgumentException("Illegal phone number")
+        if(!phone.isNullOrBlank() && phone!!.length != 12) throw IllegalArgumentException("Enter a valid phone number starting with a + and containing 11 digits")
 
         login = email ?: phone!!
 
