@@ -29,9 +29,8 @@ class User private constructor(
             _login = value.toLowerCase()
         }
         get() = _login!!
-    private val salt: String by lazy {
-        ByteArray(16).also { SecureRandom().nextBytes(it) }.toString()
-    }
+
+    private var salt: String? = null
 
     private lateinit var passwordHash: String
 
@@ -58,6 +57,18 @@ class User private constructor(
         sendAccessCodeToUser(rawPhone, code)
     }
 
+    constructor(
+        firstName: String,
+        lastName: String?,
+        email: String?,
+        presettedSalt: String,
+        hash: String,
+        phone: String?
+    ):this(firstName=firstName, lastName = lastName, email = email, rawPhone = phone, meta = mapOf("src" to "csv")){
+        salt = presettedSalt
+        passwordHash = hash
+    }
+
     init{
 
         check(!firstName.isBlank()) {"First Name must be not blank"}
@@ -68,6 +79,8 @@ class User private constructor(
         if(!phone.isNullOrBlank() && phone!!.length != 12) throw IllegalArgumentException("Enter a valid phone number starting with a + and containing 11 digits")
 
         login = email ?: phone!!
+
+        if(salt.isNullOrBlank()) salt = ByteArray(16).also { SecureRandom().nextBytes(it) }.toString()
 
         userInfo = """
             firstName: $firstName
@@ -131,6 +144,20 @@ class User private constructor(
                 !email.isNullOrBlank() && !password.isNullOrBlank() -> User(firstName, lastName, email = email, password = password)
                 else -> throw IllegalArgumentException("Email or phone must be not null or blank")
             }
+        }
+
+        fun loadFromCsv(csv: String):User{
+            val valueList = csv.split(";").map { if(it.isNullOrBlank()) null else it.trim() }
+            require(valueList.size == 5) { "Illegal csv string format" }
+            require(!valueList[0].isNullOrEmpty()) { "Illegal csv string format" }
+            require(!valueList[2].isNullOrBlank() && valueList[2]!!.contains(":")) { "Illegal csv string format" }
+
+            val(firstName, lastName) = valueList[0]!!.fullNameToPair()
+            val email = valueList[1]
+            val (salt, hash) = valueList[2]!!.split(":")
+            val phone = valueList[3]
+
+            return User(firstName, lastName, email, salt, hash, phone)
         }
 
         private fun String.fullNameToPair(): Pair<String, String?> {

@@ -136,8 +136,6 @@ class ExampleUnitTest {
             meta: {auth=sms}
         """.trimIndent()
 
-        println(user.userInfo)
-
         val successResult =  holder.loginUser("+7 (917) 971-11-11", user.accessCode!!)
 
         Assert.assertEquals(expectedInfo, successResult)
@@ -186,4 +184,49 @@ class ExampleUnitTest {
         Assert.assertNotEquals(oldAccess, user.accessCode!!)
         Assert.assertEquals(expectedInfo, successResult)
     }
+
+    //pass testPass salt [B@2a33fae0 hash 80fc139957b3dbc8e67690637dd41862
+    @Test
+    fun load_users_from_csv(){
+        val csvList = listOf(
+            " John Doe ;JohnDoe@unknow.com;[B@2a33fae0:80fc139957b3dbc8e67690637dd41862;;",
+            " John Doe ;JohnDoe2@unknow.com;[B@2a33fae0:80fc139957b3dbc8e67690637dd41862;;"
+        )
+
+        val userInfoList = listOf(
+            """
+                firstName: John
+                lastName: Doe
+                login: johndoe@unknow.com
+                fullName: John Doe
+                initials: J D
+                email: JohnDoe@unknow.com
+                phone: null
+                meta: {src=csv}
+            """.trimIndent(),
+            """
+                firstName: John
+                lastName: Doe
+                login: johndoe2@unknow.com
+                fullName: John Doe
+                initials: J D
+                email: JohnDoe2@unknow.com
+                phone: null
+                meta: {src=csv}
+            """.trimIndent()
+        )
+
+        val holder = UserHolder
+
+        val users = holder.importUsers(csvList)
+
+        userInfoList.zip(users).map { (info, user) ->
+            val result = holder.loginUser(user.login, "testPass")
+            Assert.assertEquals(info, result)
+        }.also {
+            Assert.assertEquals(2, it.size)
+        }
+
+    }
+
 }

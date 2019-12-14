@@ -47,6 +47,12 @@ object UserHolder {
         }
     }
 
+    fun importUsers(list: List<String>): List<User> = list.map{ User.loadFromCsv(it).also {
+        user ->
+        check(!map.contains(user.login)){"User already exists"}
+        map[user.login] = user
+    }}
+
     private fun castLoginIfPhone(login: String): String {
         val lg = login.replace("[^+\\d]".toRegex(), "")
         return if("\\+\\d{11}".toRegex().matches(lg)) lg else login
