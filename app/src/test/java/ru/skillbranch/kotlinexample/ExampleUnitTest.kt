@@ -4,6 +4,8 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Test
 
+import ru.skillbranch.kotlinexample.extensions.dropLastUntil
+
 /**
  * Example local unit test, which will execute on the development machine (host).
  *
@@ -227,6 +229,24 @@ class ExampleUnitTest {
             Assert.assertEquals(2, it.size)
         }
 
+    }
+
+    @Test
+    fun iterable_extension_simple_test(){
+        val input = listOf(1, 2, 3)
+        val output = listOf(1)
+
+        val res = input.dropLastUntil{it == 2}
+        Assert.assertEquals(output, res)
+    }
+
+    @Test
+    fun iterable_extension_string_test(){
+        val input = "House Nymeros Martell of Sunspear".split(" ")
+        val output = listOf("House", "Nymeros", "Martell")
+
+        val res = input.dropLastUntil { it == "of" }
+        Assert.assertEquals(output, res)
     }
 
 }
