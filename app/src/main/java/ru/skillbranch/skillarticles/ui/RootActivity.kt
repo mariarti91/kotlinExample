@@ -69,9 +69,9 @@ class RootActivity : AppCompatActivity() {
     }
 
     private fun setupSubmenu() {
-        btn_text_up.setOnClickListener { viewModel.handelTextUp() }
-        btn_text_down.setOnClickListener { viewModel.handelTextDown() }
-        switch_mode.setOnClickListener { viewModel.handelNightMode() }
+        btn_text_up.setOnClickListener { viewModel.handleUpText() }
+        btn_text_down.setOnClickListener { viewModel.handleDownText() }
+        switch_mode.setOnClickListener { viewModel.handleNightMode() }
     }
 
     private fun setupBottomBar() {
@@ -82,8 +82,8 @@ class RootActivity : AppCompatActivity() {
     }
 
     private fun renderUi(data: ArticleState) {
-        btn_settings.isChecked = data.isSnowMenu
-        if(data.isSnowMenu) submenu.open() else submenu.close()
+        btn_settings.isChecked = data.isShowMenu
+        if(data.isShowMenu) submenu.open() else submenu.close()
 
         btn_like.isChecked = data.isLike
         btn_bookmark.isChecked = data.isBookmark
