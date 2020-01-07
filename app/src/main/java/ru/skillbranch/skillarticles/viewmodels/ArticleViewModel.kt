@@ -96,12 +96,17 @@ class ArticleViewModel(private val articleId: String)
     }
 
     override fun handleBookmark(){
+        val info = currentState.toArticlePersonalInfo()
+        repository.updateArticlePersonalInfo(info.copy(isBookmark = !info.isBookmark))
 
+        val msg = Notify.TextMessage(if(currentState.isBookmark) "Add to bookmarks" else "Remove from bookmarks")
+
+        notify(msg)
     }
 
     override fun handleShare(){
         val msg = "Share is not implemented"
-        notify(Notify.ErrorMessage(msg, "ok", null))
+        notify(Notify.ErrorMessage(msg, "OK", null))
     }
 
     override fun handleToggleMenu(){
