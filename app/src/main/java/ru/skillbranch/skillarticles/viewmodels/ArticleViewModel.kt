@@ -22,7 +22,8 @@ class ArticleViewModel(private val articleId: String)
                 title = article.title,
                 category = article.category,
                 categoryIcon = article.categoryIcon,
-                date = article.date.format()
+                date = article.date.format(),
+                author = article.author
             )
         }
 
@@ -84,7 +85,7 @@ class ArticleViewModel(private val articleId: String)
 
         toggleLike()
 
-        val msg = if(currentState.isLike) Notify.TextMessage("Mark as liked")
+        val msg = if(currentState.isLike) Notify.TextMessage("Mark is liked")
         else Notify.ActionMessage(
                 "Don't like it anymore",
                 "No, still like it",
