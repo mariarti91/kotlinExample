@@ -2,10 +2,15 @@ package ru.skillbranch.skillarticles.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProviders
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.viewmodels.ArticleState
@@ -38,6 +43,29 @@ class RootActivity : AppCompatActivity() {
             renderNotification(it)
         }
 
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_search, menu)
+        val searchItem = menu?.findItem(R.id.action_search)
+        val searchView = searchItem?.actionView as SearchView
+
+        searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener{
+            override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
+                viewModel.handleSearchMode(true)
+                return true
+            }
+
+            override fun onMenuItemActionCollapse(p0: MenuItem?): Boolean {
+                viewModel.handleSearchMode(false)
+                return true
+            }
+
+        })
+
+        searchView.queryHint = "Hint"
+
+        return super.onCreateOptionsMenu(menu)
     }
 
     private fun renderNotification(notify: Notify) {
@@ -108,6 +136,10 @@ class RootActivity : AppCompatActivity() {
         toolbar.subtitle = data.category ?: "loading"
 
         if(data.categoryIcon != null) toolbar.logo = getDrawable(data.categoryIcon as Int)
+
+        if(data.isSearch){
+            Log.d("M_RootActivity", "open search menu")
+        }
     }
 
     private fun setupToolBar() {
