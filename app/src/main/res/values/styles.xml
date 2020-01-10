@@ -47,4 +47,9 @@
         <item name="layout_insetEdge">bottom</item>
     </style>
 
+    <style name="CustomSearchView" parent="Widget.AppCompat.SearchView.ActionBar">
+        <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
+        <item name="android:textColorHint">@color/color_gray</item>
+    </style>
+
 </resources>

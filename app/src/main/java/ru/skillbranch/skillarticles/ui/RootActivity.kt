@@ -62,6 +62,19 @@ class RootActivity : AppCompatActivity() {
 
         })
 
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                viewModel.handleSearch(query)
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                viewModel.handleSearch(newText)
+                return true
+            }
+
+        })
+
         val state = viewModel.currentState
 
         if (state.isSearch) {
