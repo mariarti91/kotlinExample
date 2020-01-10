@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProviders
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.viewmodels.ArticleState
@@ -62,6 +61,14 @@ class RootActivity : AppCompatActivity() {
             }
 
         })
+
+        val state = viewModel.currentState
+
+        if (state.isSearch) {
+            searchItem.expandActionView()
+            searchView.setQuery(state.searchQuery, true)
+            searchView.clearFocus()
+        }
 
         searchView.queryHint = "Hint"
 
