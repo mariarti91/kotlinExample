@@ -124,6 +124,14 @@ class ArticleViewModel(private val articleId: String)
         updateState { it.copy(searchQuery = query) }
     }
 
+    fun handleUpResult() {
+
+    }
+
+    fun handleDownResult() {
+
+    }
+
 }
 
 data class ArticleState(
