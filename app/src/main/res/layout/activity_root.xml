@@ -27,6 +27,7 @@
 
     </com.google.android.material.appbar.AppBarLayout>
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
@@ -60,6 +61,6 @@
         android:theme="@style/ArticleBarsTheme"
         android:elevation="4dp"
         app:layout_insetEdge="bottom"
-        app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior"/>
+        />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

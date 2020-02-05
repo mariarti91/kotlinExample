@@ -1,11 +1,14 @@
 package ru.skillbranch.skillarticles.ui
 
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.Color
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
@@ -14,24 +17,23 @@ import com.google.android.material.snackbar.Snackbar
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.viewmodels.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.ArticleViewModel
-import ru.skillbranch.skillarticles.viewmodels.ViewModelFactory
+import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
 import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.layout_bottombar.*
 import kotlinx.android.synthetic.main.layout_submenu.*
 import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
-import ru.skillbranch.skillarticles.viewmodels.Notify
+import ru.skillbranch.skillarticles.extensions.setMargingOptionally
+import ru.skillbranch.skillarticles.ui.Base.BaseActivity
+import ru.skillbranch.skillarticles.ui.custom.SearchSpan
+import ru.skillbranch.skillarticles.viewmodels.base.Notify
 
-class RootActivity : AppCompatActivity() {
-
-    private lateinit var viewModel: ArticleViewModel
+class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
+    override val layout: Int = R.layout.activity_root
+    override lateinit var viewModel: ArticleViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_root)
-        setupToolBar()
-        setupBottomBar()
-        setupSubmenu()
 
         val vmFactory = ViewModelFactory("0")
         viewModel = ViewModelProviders.of(this, vmFactory).get(ArticleViewModel::class.java)
@@ -43,6 +45,12 @@ class RootActivity : AppCompatActivity() {
             renderNotification(it)
         }
 
+    }
+
+    override fun setupViews() {
+        setupToolBar()
+        setupBottomBar()
+        setupSubmenu()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -147,7 +155,9 @@ class RootActivity : AppCompatActivity() {
 
     private fun renderUi(data: ArticleState) {
 
-        bottombar.setSearchState(data.isSearch)
+        if(data.isSearch) showSearchBar() else hideSearchBar()
+
+        if(data.searchResult.isNotEmpty()) renderSearchResult(data.searchResult)
 
         btn_settings.isChecked = data.isShowMenu
         if(data.isShowMenu) submenu.open() else submenu.close()
@@ -169,7 +179,12 @@ class RootActivity : AppCompatActivity() {
             btn_text_down.isChecked = true
         }
 
-        tv_text_content.text = if(data.isLoadingContent) "loading" else data.content.first() as String
+        if(data.isLoadingContent){
+            tv_text_content.text = "loading"
+        } else if(tv_text_content.text == "loading"){
+            val content = data.content.first() as String
+            tv_text_content.setText(content, TextView.BufferType.SPANNABLE)
+        }
 
         toolbar.title = data.title ?: "loading"
         toolbar.subtitle = data.category ?: "loading"
@@ -180,6 +195,8 @@ class RootActivity : AppCompatActivity() {
             Log.d("M_RootActivity", "open search menu")
         }
     }
+
+
 
     private fun setupToolBar() {
         setSupportActionBar(toolbar)
@@ -194,4 +211,38 @@ class RootActivity : AppCompatActivity() {
             logo.layoutParams = it
         }
     }
+
+    override fun renderSearchResult(searchResult: List<Pair<Int, Int>>) {
+        val content = tv_text_content.text as Spannable
+        val bgColor = Color.RED
+        val fgColor = Color.WHITE
+        searchResult.forEach {(start, end) ->
+            content.setSpan(
+                    SearchSpan(bgColor, fgColor),
+                    start,
+                    end,
+                    SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+    }
+
+    override fun renderSearchPosition(searchPosition: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun clearSearchResult() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun showSearchBar() {
+        bottombar.setSearchState(true)
+        scroll.setMargingOptionally(bottom = dpToIntPx(56))
+    }
+
+    override fun hideSearchBar() {
+        bottombar.setSearchState(false)
+        scroll.setMargingOptionally(bottom = dpToIntPx(0))
+    }
 }
+
+
