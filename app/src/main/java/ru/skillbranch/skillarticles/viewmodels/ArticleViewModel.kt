@@ -121,7 +121,6 @@ class ArticleViewModel(private val articleId: String)
     }
 
     override fun handleSearchMode(isSearch: Boolean) {
-        Log.d("M_ArticleViewModel", "Search Mode ${if(isSearch)"Enabled" else "Disabled"}")
         if(isSearch == currentState.isSearch) return
         updateState { it.copy(isSearch = isSearch, isShowMenu = false, searchPosition = 0) }
     }
