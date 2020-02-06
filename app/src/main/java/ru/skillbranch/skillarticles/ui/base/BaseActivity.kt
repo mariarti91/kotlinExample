@@ -1,6 +1,7 @@
 package ru.skillbranch.skillarticles.ui.base
 
 import android.os.Bundle
+import android.os.PersistableBundle
 import androidx.appcompat.app.AppCompatActivity
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
@@ -23,4 +24,15 @@ abstract class BaseActivity<T: BaseViewModel<out IViewModelState>> : AppCompatAc
         viewModel.observeNotifications(this){ renderNotification(it) }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        viewModel.saveState(outState)
+        binding.saveUi(outState)
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        viewModel.restoreState(savedInstanceState)
+        binding.restoreUi(savedInstanceState)
+    }
 }

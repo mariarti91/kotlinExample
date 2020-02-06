@@ -2,6 +2,7 @@ package ru.skillbranch.skillarticles.viewmodels
 
 import android.os.Bundle
 import android.util.Log
+import androidx.core.os.bundleOf
 import androidx.lifecycle.LiveData
 import ru.skillbranch.skillarticles.data.ArticleData
 import ru.skillbranch.skillarticles.data.ArticlePersonalInfo
@@ -122,7 +123,7 @@ class ArticleViewModel(private val articleId: String)
     override fun handleSearchMode(isSearch: Boolean) {
         Log.d("M_ArticleViewModel", "Search Mode ${if(isSearch)"Enabled" else "Disabled"}")
         if(isSearch == currentState.isSearch) return
-        updateState { it.copy(isSearch = isSearch) }
+        updateState { it.copy(isSearch = isSearch, isShowMenu = false, searchPosition = 0) }
     }
 
     override fun handleSearch(query: String?) {
@@ -165,10 +166,22 @@ data class ArticleState(
     val reviews: List<Any> = emptyList()
 ): IViewModelState{
     override fun save(outState: Bundle) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        outState.putAll(
+                bundleOf(
+                    "isSearch" to isSearch,
+                    "searchQuery" to searchQuery,
+                    "searchResult" to searchResult,
+                    "searchPosition" to searchPosition
+                )
+        )
     }
 
     override fun restore(savedState: Bundle): IViewModelState {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return copy(
+            isSearch = savedState["isSearch"] as Boolean,
+            searchQuery = savedState["searchQuery"] as? String,
+            searchResult = savedState["searchResult"] as List<Pair<Int, Int>>,
+            searchPosition = savedState["searchPosition"] as Int
+        )
     }
 }
