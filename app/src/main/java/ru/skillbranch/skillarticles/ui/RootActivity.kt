@@ -9,6 +9,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
@@ -24,7 +25,7 @@ import kotlinx.android.synthetic.main.layout_bottombar.*
 import kotlinx.android.synthetic.main.layout_submenu.*
 import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
-import ru.skillbranch.skillarticles.extensions.setMargingOptionally
+import ru.skillbranch.skillarticles.extensions.setMarginOptionally
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
 import ru.skillbranch.skillarticles.ui.base.Binding
 import ru.skillbranch.skillarticles.ui.custom.SearchFocusSpan
@@ -43,8 +44,10 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
     }
     override val binding: ArticleBinding by lazy { ArticleBinding() }
 
-    private val bgColor by AttrValue(R.attr.colorSecondary)
-    private val fgColor by AttrValue(R.attr.colorOnSecondary)
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    val bgColor by AttrValue(R.attr.colorSecondary)
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    val fgColor by AttrValue(R.attr.colorOnSecondary)
 
     override fun setupViews() {
         setupToolBar()
@@ -55,9 +58,20 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_search, menu)
         val searchItem = menu?.findItem(R.id.action_search)
-        val searchView = searchItem?.actionView as SearchView
+        val searchView = searchItem?.actionView as? SearchView
+        searchView?.queryHint = "Search"
 
-        searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener{
+        if (binding.isSearch) {
+            searchItem?.expandActionView()
+            searchView?.setQuery(binding.searchQuery, true)
+            showSearchBar()
+
+            if(binding.isFocusedSearch) searchView?.requestFocus()
+            else searchView?.clearFocus()
+        }
+
+
+        searchItem?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener{
             override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
                 viewModel.handleSearchMode(true)
                 return true
@@ -70,7 +84,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
         })
 
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
+        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
                 viewModel.handleSearch(query)
                 return true
@@ -82,14 +96,6 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             }
 
         })
-
-        if (binding.isSearch) {
-            searchItem.expandActionView()
-            searchView.setQuery(binding.searchQuery, true)
-            searchView.clearFocus()
-        }
-
-        searchView.queryHint = "Hint"
 
         return super.onCreateOptionsMenu(menu)
     }
@@ -206,12 +212,12 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
     override fun showSearchBar() {
         bottombar.setSearchState(true)
-        scroll.setMargingOptionally(bottom = dpToIntPx(56))
+        scroll.setMarginOptionally(bottom = dpToIntPx(56))
     }
 
     override fun hideSearchBar() {
         bottombar.setSearchState(false)
-        scroll.setMargingOptionally(bottom = dpToIntPx(0))
+        scroll.setMarginOptionally(bottom = dpToIntPx(0))
     }
 
     inner class ArticleBinding() : Binding(){
@@ -297,7 +303,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             isSearch = data.isSearch
             searchQuery = data.searchQuery
             searchPosition = data.searchPosition
-            searchResults = data.searchResult
+            searchResults = data.searchResults
         }
 
         override fun saveUi(outState: Bundle) {
@@ -307,7 +313,6 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         override fun restoreUi(savedState: Bundle) {
             isFocusedSearch = savedState.getBoolean(::isFocusedSearch.name)
         }
-
     }
 
 }

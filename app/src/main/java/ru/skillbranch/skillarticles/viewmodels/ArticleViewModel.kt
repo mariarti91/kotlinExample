@@ -128,8 +128,8 @@ class ArticleViewModel(private val articleId: String)
 
     override fun handleSearch(query: String?) {
         query ?: return
-        val result = (currentState.content.firstOrNull() as? String).indexesOf(query).map{it to it + query.length + 1}
-        updateState { it.copy(searchQuery = query, searchResult = result) }
+        val result = (currentState.content.firstOrNull() as? String).indexesOf(query).map{ it to it + query.length }
+        updateState { it.copy(searchQuery = query, searchResults = result) }
     }
 
     fun handleUpResult() {
@@ -143,44 +143,45 @@ class ArticleViewModel(private val articleId: String)
 }
 
 data class ArticleState(
-    val isAuth: Boolean = false,
-    val isLoadingContent: Boolean = true,
-    val isLoadingReviews: Boolean = true,
-    val isLike: Boolean = false,
-    val isBookmark: Boolean = false,
-    val isShowMenu: Boolean = false,
-    val isBigText: Boolean = false,
-    val isDarkMode: Boolean = false,
-    val isSearch: Boolean = false,
-    val searchQuery: String? = null,
-    val searchResult: List<Pair<Int, Int>> = emptyList(),
-    val searchPosition: Int = 0,
-    val shareLink: String? = null,
-    val title: String? = null,
-    val category: String? = null,
-    val categoryIcon: Any? = null,
-    val date: String? = null,
-    val author: Any? = null,
-    val poster: String? = null,
-    val content: List<Any> = emptyList(),
-    val reviews: List<Any> = emptyList()
+        val isAuth: Boolean = false,
+        val isLoadingContent: Boolean = true,
+        val isLoadingReviews: Boolean = true,
+        val isLike: Boolean = false,
+        val isBookmark: Boolean = false,
+        val isShowMenu: Boolean = false,
+        val isBigText: Boolean = false,
+        val isDarkMode: Boolean = false,
+        val isSearch: Boolean = false,
+        val searchQuery: String? = null,
+        val searchResults: List<Pair<Int, Int>> = emptyList(),
+        val searchPosition: Int = 0,
+        val shareLink: String? = null,
+        val title: String? = null,
+        val category: String? = null,
+        val categoryIcon: Any? = null,
+        val date: String? = null,
+        val author: Any? = null,
+        val poster: String? = null,
+        val content: List<Any> = emptyList(),
+        val reviews: List<Any> = emptyList()
 ): IViewModelState{
     override fun save(outState: Bundle) {
         outState.putAll(
                 bundleOf(
                     "isSearch" to isSearch,
                     "searchQuery" to searchQuery,
-                    "searchResult" to searchResult,
+                    "searchResults" to searchResults,
                     "searchPosition" to searchPosition
                 )
         )
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun restore(savedState: Bundle): IViewModelState {
         return copy(
             isSearch = savedState["isSearch"] as Boolean,
             searchQuery = savedState["searchQuery"] as? String,
-            searchResult = savedState["searchResult"] as List<Pair<Int, Int>>,
+            searchResults = savedState["searchResults"] as List<Pair<Int, Int>>,
             searchPosition = savedState["searchPosition"] as Int
         )
     }

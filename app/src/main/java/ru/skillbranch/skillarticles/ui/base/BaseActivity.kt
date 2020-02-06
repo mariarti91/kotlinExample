@@ -2,13 +2,15 @@ package ru.skillbranch.skillarticles.ui.base
 
 import android.os.Bundle
 import android.os.PersistableBundle
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
 
 abstract class BaseActivity<T: BaseViewModel<out IViewModelState>> : AppCompatActivity(){
-    protected abstract val binding: Binding
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    abstract val binding: Binding
     protected abstract val viewModel : T
     protected abstract val layout: Int
 
