@@ -1,7 +1,6 @@
 package ru.skillbranch.skillarticles.ui.base
 
 import android.os.Bundle
-import android.os.PersistableBundle
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
@@ -18,7 +17,9 @@ abstract class BaseActivity<T: BaseViewModel<out IViewModelState>> : AppCompatAc
     abstract fun setupViews()
     abstract fun renderNotification(notify: Notify)
 
-    internal inline fun provideViewModel(arg : Any?) = ViewModelDelegate(viewModel.javaClass, arg)
+    internal inline fun <reified T: BaseViewModel<out IViewModelState>>provideViewModel(arg : Any?) : ViewModelDelegate<T>{
+        return ViewModelDelegate(T::class.java, arg)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
