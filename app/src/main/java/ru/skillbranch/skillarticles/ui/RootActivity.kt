@@ -60,7 +60,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         if (binding.isSearch) {
             searchItem?.expandActionView()
             searchView?.setQuery(binding.searchQuery, true)
-            showSearchBar()
+            //showSearchBar()
 
             if(binding.isFocusedSearch) searchView?.requestFocus()
             else searchView?.clearFocus()
@@ -295,7 +295,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             if(data.title != null) title = data.title
             if(data.category != null) category = data.category
             if(data.categoryIcon != null) categoryIcon = data.categoryIcon as Int
-            if(data.content.isNotEmpty()) content = data.content.first() as String
+            if(data.content != null) content = data.content.first() as String
 
             isLoadingContent = data.isLoadingContent
             isSearch = data.isSearch
