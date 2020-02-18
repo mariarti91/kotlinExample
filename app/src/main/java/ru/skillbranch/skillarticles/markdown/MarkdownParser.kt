@@ -11,9 +11,10 @@ object MarkdownParser {
     private const val QUOTE_GROUP = "(^> .+?$)"
     private const val ITALIC_GROUP = "((?<!\\*)\\*[^*].*?[^*]?\\*(?!\\*)|(?<!_)_[^_].*?[^_]?_(?!_))"
     private const val BOLD_GROUP = "((?<!\\*)\\*{2}[^*].*?[^*]?\\*{2}(?!\\*)|(?<!_)_{2}[^_].*?[^_]?_{2}(?!_))"
+    private const val STRIKE_GROUP = "((?<!~)~{2}[^~].*?[^~]?~{2}(?!~))"
 
     private const val MARKDOWN_GROUPS = "$UNORDERED_LIST_ITEM_GROUP|$HEADER_GROUP|$QUOTE_GROUP" +
-            "|$ITALIC_GROUP|$BOLD_GROUP"
+            "|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP"
 
     private val elementsPattern by lazy { Pattern.compile(MARKDOWN_GROUPS, Pattern.MULTILINE) }
 
@@ -42,7 +43,7 @@ object MarkdownParser {
 
             var text: CharSequence
 
-            val groups = 1..5
+            val groups = 1..6
             var group = -1
             for(gr in groups){
                 if(matcher.group(gr) != null){
@@ -103,6 +104,16 @@ object MarkdownParser {
                     val subelements = findElements(text)
 
                     val element = Element.Bold(text, subelements)
+                    parents.add(element)
+                    lastStartIndex = endIndex
+                }
+
+                //STRIKE
+                6 -> {
+                    text = string.subSequence(startIndex.plus(2), endIndex.minus(2))
+                    val subelements = findElements(text)
+
+                    val element = Element.Strike(text, subelements)
                     parents.add(element)
                     lastStartIndex = endIndex
                 }
