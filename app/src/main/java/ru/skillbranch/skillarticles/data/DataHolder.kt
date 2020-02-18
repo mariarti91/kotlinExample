@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import ru.skillbranch.skillarticles.R
 import java.util.*
 
+@Suppress("UNUSED_PARAMETER")
 object LocalDataHolder {
     private val articleData = MutableLiveData<ArticleData?>(null)
     private val articleInfo = MutableLiveData<ArticlePersonalInfo?>(null)
@@ -52,6 +53,7 @@ object LocalDataHolder {
 
 object NetworkDataHolder {
     val content = MutableLiveData<String?>(null)
+    @Suppress("UNUSED_PARAMETER")
     fun loadArticleContent(articleId: String): LiveData<String?> {
         GlobalScope.launch {
             delay(500)
