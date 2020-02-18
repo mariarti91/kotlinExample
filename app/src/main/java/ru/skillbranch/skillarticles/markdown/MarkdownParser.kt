@@ -7,8 +7,12 @@ object MarkdownParser {
     private val LINE_SEPARATOR = System.getProperty("line.separator") ?: "\n"
 
     private const val UNORDERED_LIST_ITEM_GROUP = "(^[*+-] .+$)"
+    private const val HEADER_GROUP = "(^#{1,6} .+?$)"
+    private const val QUOTE_GROUP = "(^> .+?$)"
+    private const val ITALIC_GROUP = "((?<!\\*)\\*[^*].*?[^*]?\\*(?!\\*)|(?<!_)_[^_].*?[^_]?_(?!_))"
 
-    const val MARKDOWN_GROUPS = "$UNORDERED_LIST_ITEM_GROUP"
+    private const val MARKDOWN_GROUPS = "$UNORDERED_LIST_ITEM_GROUP|$HEADER_GROUP|$QUOTE_GROUP" +
+            "|$ITALIC_GROUP"
 
     private val elementsPattern by lazy { Pattern.compile(MARKDOWN_GROUPS, Pattern.MULTILINE) }
 
@@ -37,7 +41,7 @@ object MarkdownParser {
 
             var text: CharSequence
 
-            val groups = 1..1
+            val groups = 1..4
             var group = -1
             for(gr in groups){
                 if(matcher.group(gr) != null){
@@ -49,6 +53,7 @@ object MarkdownParser {
             when(group){
                 -1 -> break@loop
 
+                //UNORDERED LIST
                 1 -> {
                     text = string.subSequence(startIndex.plus(2), endIndex)
 
@@ -58,11 +63,46 @@ object MarkdownParser {
 
                     lastStartIndex = endIndex
                 }
+
+                //HEADER
+                2 -> {
+                    val reg = "^#{1,6}".toRegex().find(string.subSequence(startIndex, endIndex))
+                    val level = reg!!.value.length
+
+                    text = string.subSequence(startIndex.plus(level.inc()), endIndex)
+
+                    val element = Element.Header(level, text)
+                    parents.add(element)
+                    lastStartIndex = endIndex
+                }
+
+                //QUOTE
+                3 -> {
+                    text = string.subSequence(startIndex.plus(2), endIndex)
+                    val subelements = findElements(text)
+
+                    val element = Element.Quote(text, subelements)
+                    parents.add(element)
+                    lastStartIndex = endIndex
+                }
+
+                //ITALIC
+                4 -> {
+                    text = string.subSequence(startIndex.plus(1), endIndex.minus(1))
+                    val subelements = findElements(text)
+
+                    val element = Element.Italic(text, subelements)
+                    parents.add(element)
+                    lastStartIndex = endIndex
+                }
             }
 
         }
 
-
+        if(lastStartIndex < string.length){
+            val text = string.subSequence(lastStartIndex, string.length)
+            parents.add(Element.Text(text))
+        }
 
         return parents
     }
@@ -85,4 +125,20 @@ sealed class Element(){
         override val text: CharSequence,
         override val elements: List<Element> = emptyList()
     ):Element()
+
+    data class Header(
+            val level: Int = 1,
+            override val text: CharSequence,
+            override val elements: List<Element> = emptyList()
+    ):Element()
+
+    data class Quote(
+            override val text: CharSequence,
+            override val elements: List<Element> = emptyList()
+    ):Element()
+
+    data class Italic(
+            override val text: CharSequence,
+            override val elements: List<Element> = emptyList()
+    ) : Element()
 }

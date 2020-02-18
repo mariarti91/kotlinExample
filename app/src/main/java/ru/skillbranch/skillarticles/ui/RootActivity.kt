@@ -60,7 +60,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         if (binding.isSearch) {
             searchItem?.expandActionView()
             searchView?.setQuery(binding.searchQuery, true)
-            //showSearchBar()
+            showSearchBar()
 
             if(binding.isFocusedSearch) searchView?.requestFocus()
             else searchView?.clearFocus()
