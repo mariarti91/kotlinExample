@@ -38,7 +38,7 @@ object MarkdownParser {
             val endIndex = matcher.end()
 
             if(lastStartIndex < startIndex){
-                parents.add(Element.Text(string.subSequence(startIndex, endIndex)))
+                parents.add(Element.Text(string.subSequence(lastStartIndex, startIndex)))
             }
 
             var text: CharSequence
