@@ -14,6 +14,7 @@ import ru.skillbranch.skillarticles.extensions.attrValue
 import ru.skillbranch.skillarticles.extensions.dpToPx
 import ru.skillbranch.skillarticles.markdown.spans.BlockquotesSpan
 import ru.skillbranch.skillarticles.markdown.spans.HeaderSpan
+import ru.skillbranch.skillarticles.markdown.spans.HorizontalRuleSpan
 import ru.skillbranch.skillarticles.markdown.spans.UnorderedListSpan
 
 class MarkdownBuilder(context: Context) {
@@ -26,6 +27,7 @@ class MarkdownBuilder(context: Context) {
     private val colorDivider = context.getColor(R.color.color_divider)
     private val headerMarginTop = context.dpToPx(12)
     private val headerMarginBottom = context.dpToPx(8)
+    private val ruleWidth = context.dpToPx(2)
 
 
     fun markdownToSpan(string: String) : SpannedString{
@@ -91,6 +93,12 @@ class MarkdownBuilder(context: Context) {
                         for(child in element.elements){
                             buildElement(child, builder)
                         }
+                    }
+                }
+
+                is Element.Rule -> {
+                    inSpans(HorizontalRuleSpan(ruleWidth, colorDivider)){
+                        append(element.text)
                     }
                 }
 
