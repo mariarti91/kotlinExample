@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.text.SpannedString
+import android.text.style.StrikethroughSpan
 import android.text.style.StyleSpan
 import android.util.Log
 import androidx.core.text.buildSpannedString
@@ -68,6 +69,31 @@ class MarkdownBuilder(context: Context) {
                         append(element.text)
                     }
                 }
+
+                is Element.Italic -> {
+                    inSpans(StyleSpan(Typeface.ITALIC)){
+                        for(child in element.elements){
+                            buildElement(child, builder)
+                        }
+                    }
+                }
+
+                is Element.Bold -> {
+                    inSpans(StyleSpan(Typeface.BOLD)){
+                        for(child in element.elements){
+                            buildElement(child, builder)
+                        }
+                    }
+                }
+
+                is Element.Strike -> {
+                    inSpans(StrikethroughSpan()){
+                        for(child in element.elements){
+                            buildElement(child, builder)
+                        }
+                    }
+                }
+
                 else -> append(element.text)
             }
         }
