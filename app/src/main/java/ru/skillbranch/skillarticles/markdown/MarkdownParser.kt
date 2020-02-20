@@ -17,10 +17,11 @@ object MarkdownParser {
     private const val INLINE_GROUP = "((?<!`)`{1}[^\\s`][^\n`]*?`{1}(?!`))"
     private const val LINK_GROUP = "(\\[.+?]\\(.+?\\))"
     private const val ORDERED_LIST_ITEM_GROUP = "(^\\d+\\. .+$)"
+    private const val BLOCK_CODE_GROUP = "(^`{3}[^`]*`{3}$)"
 
     private const val MARKDOWN_GROUPS = "$UNORDERED_LIST_ITEM_GROUP|$HEADER_GROUP|$QUOTE_GROUP" +
             "|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|${RULE_GROUP}|$INLINE_GROUP|$LINK_GROUP" +
-            "|$ORDERED_LIST_ITEM_GROUP"
+            "|$ORDERED_LIST_ITEM_GROUP|$BLOCK_CODE_GROUP"
 
     private val elementsPattern by lazy { Pattern.compile(MARKDOWN_GROUPS, Pattern.MULTILINE) }
 
@@ -64,7 +65,7 @@ object MarkdownParser {
 
             var text: CharSequence
 
-            val groups = 1..10
+            val groups = 1..11
             var group = -1
             for(gr in groups){
                 if(matcher.group(gr) != null){
@@ -139,12 +140,14 @@ object MarkdownParser {
                     lastStartIndex = endIndex
                 }
 
+                //RULE
                 7 -> {
                     val element = Element.Rule()
                     parents.add(element)
                     lastStartIndex = endIndex
                 }
 
+                //INLINE
                 8 -> {
                     text = string.subSequence(startIndex.inc(), endIndex.dec())
 
@@ -153,6 +156,7 @@ object MarkdownParser {
                     lastStartIndex = endIndex
                 }
 
+                //LINK
                 9 -> {
                     val reg = "\\[(.+)]\\((.+)\\)".toRegex().find(string.subSequence(startIndex, endIndex))
                     val (title, link) = reg!!.groupValues.drop(1)
@@ -161,6 +165,7 @@ object MarkdownParser {
                     lastStartIndex = endIndex
                 }
 
+                //ORDERED LIST ITEM
                 10 -> {
                     val reg = "(\\d+\\.) (.+)".toRegex().find(string.subSequence(startIndex,endIndex))
                     val (order, title) = reg!!.groupValues.drop(1)
@@ -168,6 +173,15 @@ object MarkdownParser {
                     val element = Element.OrderedListItem(order, title, subs)
                     parents.add(element)
 
+                    lastStartIndex = endIndex
+                }
+
+                //CODE BLOCK
+                11 -> {
+                    text = string.subSequence(startIndex.plus(3), endIndex.minus(3))
+
+                    val element = Element.BlockCode(text = text)
+                    parents.add(element)
                     lastStartIndex = endIndex
                 }
             }
