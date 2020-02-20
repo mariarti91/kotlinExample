@@ -6,28 +6,33 @@ import android.text.SpannableStringBuilder
 import android.text.SpannedString
 import android.text.style.StrikethroughSpan
 import android.text.style.StyleSpan
+import android.text.style.URLSpan
 import android.util.Log
 import androidx.core.text.buildSpannedString
 import androidx.core.text.inSpans
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.attrValue
 import ru.skillbranch.skillarticles.extensions.dpToPx
-import ru.skillbranch.skillarticles.markdown.spans.BlockquotesSpan
-import ru.skillbranch.skillarticles.markdown.spans.HeaderSpan
-import ru.skillbranch.skillarticles.markdown.spans.HorizontalRuleSpan
-import ru.skillbranch.skillarticles.markdown.spans.UnorderedListSpan
+import ru.skillbranch.skillarticles.markdown.spans.*
 
 class MarkdownBuilder(context: Context) {
 
-    private val gap: Float = context.dpToPx(8)
-    private val bulletRadius = context.dpToPx(4)
-    private val quoteWidth = context.dpToPx(4)
     private val colorSecondary = context.attrValue(R.attr.colorSecondary)
     private val colorPrimary = context.attrValue(R.attr.colorPrimary)
     private val colorDivider = context.getColor(R.color.color_divider)
+    private val colorOnSurface = context.attrValue(R.attr.colorOnSurface)
+    private val colorSurface = context.attrValue(R.attr.colorSurface)
     private val headerMarginTop = context.dpToPx(12)
+    private val gap: Float = context.dpToPx(8)
+    private val bulletRadius = context.dpToPx(4)
+    private val strikeWidth = context.dpToPx(4)
+    private val quoteWidth = context.dpToPx(4)
     private val headerMarginBottom = context.dpToPx(8)
     private val ruleWidth = context.dpToPx(2)
+    private val cornerRadius = context.dpToPx(8)
+    private val linkIcon = context.getDrawable(R.drawable.ic_link_black_24dp)!!
+
+
 
 
     fun markdownToSpan(string: String) : SpannedString{
@@ -98,6 +103,21 @@ class MarkdownBuilder(context: Context) {
 
                 is Element.Rule -> {
                     inSpans(HorizontalRuleSpan(ruleWidth, colorDivider)){
+                        append(element.text)
+                    }
+                }
+
+                is Element.InlineCode -> {
+                    inSpans(InlineCodeSpan(colorOnSurface, colorSurface, cornerRadius, gap)){
+                        append(element.text)
+                    }
+                }
+
+                is Element.Link -> {
+                    inSpans(
+                            IconLinkSpan(linkIcon, colorSecondary, gap, colorPrimary, strikeWidth),
+                            URLSpan(element.link)
+                    ){
                         append(element.text)
                     }
                 }
