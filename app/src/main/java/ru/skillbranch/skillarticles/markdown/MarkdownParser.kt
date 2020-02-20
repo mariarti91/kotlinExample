@@ -16,9 +16,11 @@ object MarkdownParser {
     private const val RULE_GROUP = "(^-{3}|_{3}|\\*{3}$)"
     private const val INLINE_GROUP = "((?<!`)`{1}[^\\s`][^\n`]*?`{1}(?!`))"
     private const val LINK_GROUP = "(\\[.+?]\\(.+?\\))"
+    private const val ORDERED_LIST_ITEM_GROUP = "(^\\d+\\. .+$)"
 
     private const val MARKDOWN_GROUPS = "$UNORDERED_LIST_ITEM_GROUP|$HEADER_GROUP|$QUOTE_GROUP" +
-            "|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|${RULE_GROUP}|$INLINE_GROUP|$LINK_GROUP"
+            "|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|${RULE_GROUP}|$INLINE_GROUP|$LINK_GROUP" +
+            "|$ORDERED_LIST_ITEM_GROUP"
 
     private val elementsPattern by lazy { Pattern.compile(MARKDOWN_GROUPS, Pattern.MULTILINE) }
 
@@ -62,7 +64,7 @@ object MarkdownParser {
 
             var text: CharSequence
 
-            val groups = 1..9
+            val groups = 1..10
             var group = -1
             for(gr in groups){
                 if(matcher.group(gr) != null){
@@ -158,6 +160,14 @@ object MarkdownParser {
                     parents.add(element)
                     lastStartIndex = endIndex
                 }
+
+                10 -> {
+                    val reg = "(\\d+)\\. (.+)".toRegex().find(string.subSequence(startIndex,endIndex))
+                    val (number, title) = reg!!.groupValues.drop(1)
+                    val element = Element.OrderedListItem(number, title)
+                    parents.add(element)
+                    lastStartIndex = endIndex
+                }
             }
 
         }
@@ -245,4 +255,18 @@ sealed class Element(){
             override val text: CharSequence, //for insert span
             override val elements: List<Element> = emptyList()
     ) : Element()
+
+    data class OrderedListItem(
+            val order: String,
+            override val text: CharSequence,
+            override val elements: List<Element> = emptyList()
+    ) : Element()
+
+    data class BlockCode(
+            val type: Type = Type.MIDDLE,
+            override val text: CharSequence,
+            override val elements: List<Element> = emptyList()
+    ) : Element() {
+        enum class Type { START, END, MIDDLE, SINGLE }
+    }
 }

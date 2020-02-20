@@ -7,7 +7,6 @@ import android.text.SpannedString
 import android.text.style.StrikethroughSpan
 import android.text.style.StyleSpan
 import android.text.style.URLSpan
-import android.util.Log
 import androidx.core.text.buildSpannedString
 import androidx.core.text.inSpans
 import ru.skillbranch.skillarticles.R
@@ -114,6 +113,14 @@ class MarkdownBuilder(context: Context) {
                             URLSpan(element.link)
                     ){
                         append(element.text)
+                    }
+                }
+
+                is Element.OrderedListItem -> {
+                    inSpans(OrderedListSpan(gap, element.order, colorSecondary)){
+                        for(child in element.elements){
+                            buildElement(child, builder)
+                        }
                     }
                 }
 
