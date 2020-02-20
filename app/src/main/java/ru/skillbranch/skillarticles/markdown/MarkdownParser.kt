@@ -1,5 +1,6 @@
 package ru.skillbranch.skillarticles.markdown
 
+import android.util.Log
 import java.util.regex.Pattern
 
 object MarkdownParser {
@@ -12,7 +13,7 @@ object MarkdownParser {
     private const val ITALIC_GROUP = "((?<!\\*)\\*[^*].*?[^*]?\\*(?!\\*)|(?<!_)_[^_].*?[^_]?_(?!_))"
     private const val BOLD_GROUP = "((?<!\\*)\\*{2}[^*].*?[^*]?\\*{2}(?!\\*)|(?<!_)_{2}[^_].*?[^_]?_{2}(?!_))"
     private const val STRIKE_GROUP = "((?<!~)~{2}[^~].*?[^~]?~{2}(?!~))"
-    private const val RULE_GROUP = "(^[-_*]{3}$)"
+    private const val RULE_GROUP = "(^-{3}|_{3}|\\*{3}$)"
     private const val INLINE_GROUP = "((?<!`)`{1}[^\\s`][^\n`]*?`{1}(?!`))"
     private const val LINK_GROUP = "(\\[.+?]\\(.+?\\))"
 
@@ -27,8 +28,23 @@ object MarkdownParser {
         return MarkdownText(elements)
     }
 
-    fun clear(string: String?):String?{
-        return string
+    fun clear(string: String?):String? {
+        string ?: return ""
+        val elements = findElements(string)
+        return buildString {
+            elements.forEach {
+                clearElement(it, this)
+            }
+        }
+    }
+
+    private fun clearElement(element: Element, builder: StringBuilder): CharSequence {
+        return builder.apply {
+            if(element.elements.isEmpty()) append(element.text)
+            else element.elements.forEach {
+                clearElement(it, this)
+            }
+        }
     }
 
     private fun findElements(string: CharSequence):List<Element>{
@@ -153,6 +169,21 @@ object MarkdownParser {
 
         return parents
     }
+}
+
+private fun Element.spread(): List<Element> {
+    val elements = mutableListOf<Element>()
+    elements.add(this)
+    elements.addAll(this.elements.spread())
+    return elements
+}
+
+private fun List<Element>.spread():List<Element>{
+    val elements = mutableListOf<Element>()
+    if(this.isNotEmpty()) elements.addAll(
+            this.fold(mutableListOf()){acc, el -> acc.also { it.addAll(el.spread()) }}
+    )
+    return elements
 }
 
 data class MarkdownText(

@@ -38,11 +38,6 @@ class MarkdownBuilder(context: Context) {
     fun markdownToSpan(string: String) : SpannedString{
         val markdown = MarkdownParser.parse(string)
 
-        val iterator = markdown.elements.iterator()
-        while (iterator.hasNext()){
-            Log.d("M_MarkdownBuilder", "element >> ${iterator.next()}")
-        }
-
         return buildSpannedString {
             markdown.elements.forEach{
                 buildElement(it, this)
