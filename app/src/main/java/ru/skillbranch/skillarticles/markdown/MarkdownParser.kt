@@ -65,7 +65,7 @@ object MarkdownParser {
 
             var text: CharSequence
 
-            val groups = 1..11
+            val groups = 1..10
             var group = -1
             for(gr in groups){
                 if(matcher.group(gr) != null){
