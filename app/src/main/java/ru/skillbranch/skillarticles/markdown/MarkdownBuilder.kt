@@ -117,7 +117,7 @@ class MarkdownBuilder(context: Context) {
                 }
 
                 is Element.OrderedListItem -> {
-                    inSpans(OrderedListSpan(gap, element.order, colorSecondary)){
+                    inSpans(OrderedListSpan(gap, element.order, colorOnSurface)){
                         for(child in element.elements){
                             buildElement(child, builder)
                         }

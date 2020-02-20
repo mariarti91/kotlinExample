@@ -162,10 +162,12 @@ object MarkdownParser {
                 }
 
                 10 -> {
-                    val reg = "(\\d+)\\. (.+)".toRegex().find(string.subSequence(startIndex,endIndex))
-                    val (number, title) = reg!!.groupValues.drop(1)
-                    val element = Element.OrderedListItem(number, title)
+                    val reg = "(\\d+\\.) (.+)".toRegex().find(string.subSequence(startIndex,endIndex))
+                    val (order, title) = reg!!.groupValues.drop(1)
+                    val subs = findElements(title)
+                    val element = Element.OrderedListItem(order, title, subs)
                     parents.add(element)
+
                     lastStartIndex = endIndex
                 }
             }
