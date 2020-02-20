@@ -69,7 +69,20 @@ class BlockCodeSpan(
                     )
                     canvas.drawPath(path, paint)
                 }
-                Element.BlockCode.Type.MIDDLE -> {}
+
+                Element.BlockCode.Type.MIDDLE -> {
+                    rect = RectF(
+                            0f,
+                            top.toFloat(),
+                            canvas.width.toFloat(),
+                            bottom.toFloat()
+                    )
+                    canvas.drawRect(
+                            rect,
+                            paint
+                    )
+                }
+
                 Element.BlockCode.Type.END -> {
                     path.reset()
                     rect = RectF(
