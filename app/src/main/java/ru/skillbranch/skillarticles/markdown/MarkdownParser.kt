@@ -180,8 +180,28 @@ object MarkdownParser {
                 11 -> {
                     text = string.subSequence(startIndex.plus(3), endIndex.minus(3))
 
-                    val element = Element.BlockCode(text = text)
-                    parents.add(element)
+                    val chuncks = text.split(LINE_SEPARATOR)
+                    if (chuncks.size == 1){
+                        val element = Element.BlockCode(Element.BlockCode.Type.SINGLE, text = text)
+                        parents.add(element)
+                    } else {
+                        val elements = mutableListOf<Element>()
+                        elements.add(
+                            Element.BlockCode(Element.BlockCode.Type.START, chuncks.first() + LINE_SEPARATOR)
+                        )
+
+                        elements.addAll(
+                            chuncks.subList(1, chuncks.size - 1).map {
+                                Element.BlockCode(Element.BlockCode.Type.MIDDLE, it + LINE_SEPARATOR)
+                            }
+                        )
+
+                        elements.add(
+                            Element.BlockCode(Element.BlockCode.Type.END, chuncks.last())
+                        )
+
+                        parents.addAll(elements)
+                    }
                     lastStartIndex = endIndex
                 }
             }
