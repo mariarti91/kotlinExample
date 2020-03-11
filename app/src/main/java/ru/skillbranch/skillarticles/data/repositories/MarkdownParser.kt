@@ -1,6 +1,5 @@
-package ru.skillbranch.skillarticles.markdown
+package ru.skillbranch.skillarticles.data.repositories
 
-import android.util.Log
 import java.util.regex.Pattern
 
 object MarkdownParser {
@@ -20,12 +19,12 @@ object MarkdownParser {
     private const val BLOCK_CODE_GROUP = "(^`{3}[^`]*`{3}$)"
 
     private const val MARKDOWN_GROUPS = "$UNORDERED_LIST_ITEM_GROUP|$HEADER_GROUP|$QUOTE_GROUP" +
-            "|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|${RULE_GROUP}|$INLINE_GROUP|$LINK_GROUP" +
+            "|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|$RULE_GROUP|$INLINE_GROUP|$LINK_GROUP" +
             "|$ORDERED_LIST_ITEM_GROUP|$BLOCK_CODE_GROUP"
 
     private val elementsPattern by lazy { Pattern.compile(MARKDOWN_GROUPS, Pattern.MULTILINE) }
 
-    fun parse(string: String):MarkdownText{
+    fun parse(string: String): MarkdownText {
         val elements = mutableListOf<Element>()
         elements.addAll(findElements(string))
         return MarkdownText(elements)
@@ -237,23 +236,23 @@ sealed class Element(){
     data class Text(
         override val text: CharSequence,
         override val elements: List<Element> = emptyList()
-    ):Element()
+    ): Element()
 
     data class UnorderedListItem(
         override val text: CharSequence,
         override val elements: List<Element> = emptyList()
-    ):Element()
+    ): Element()
 
     data class Header(
             val level: Int = 1,
             override val text: CharSequence,
             override val elements: List<Element> = emptyList()
-    ):Element()
+    ): Element()
 
     data class Quote(
             override val text: CharSequence,
             override val elements: List<Element> = emptyList()
-    ):Element()
+    ): Element()
 
     data class Italic(
             override val text: CharSequence,
