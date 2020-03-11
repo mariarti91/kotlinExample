@@ -180,28 +180,22 @@ object MarkdownParser {
                 11 -> {
                     text = string.subSequence(startIndex.plus(3), endIndex.minus(3))
 
-                    val chuncks = text.split(LINE_SEPARATOR)
-                    if (chuncks.size == 1){
-                        val element = Element.BlockCode(Element.BlockCode.Type.SINGLE, text = text)
-                        parents.add(element)
-                    } else {
-                        val elements = mutableListOf<Element>()
-                        elements.add(
-                            Element.BlockCode(Element.BlockCode.Type.START, chuncks.first() + LINE_SEPARATOR)
-                        )
-
-                        elements.addAll(
-                            chuncks.subList(1, chuncks.size - 1).map {
-                                Element.BlockCode(Element.BlockCode.Type.MIDDLE, it + LINE_SEPARATOR)
+                    if(text.contains(LINE_SEPARATOR)){
+                        for((index, line) in text.lines().withIndex()){
+                            when(index){
+                                text.lines().lastIndex -> parents.add(
+                                        Element.BlockCode(Element.BlockCode.Type.END, line)
+                                )
+                                0 -> parents.add(
+                                        Element.BlockCode(Element.BlockCode.Type.START, line + LINE_SEPARATOR)
+                                )
+                                else -> parents.add(
+                                        Element.BlockCode(Element.BlockCode.Type.MIDDLE, line + LINE_SEPARATOR)
+                                )
                             }
-                        )
+                        }
+                    }else parents.add(Element.BlockCode(Element.BlockCode.Type.SINGLE, text))
 
-                        elements.add(
-                            Element.BlockCode(Element.BlockCode.Type.END, chuncks.last())
-                        )
-
-                        parents.addAll(elements)
-                    }
                     lastStartIndex = endIndex
                 }
             }
