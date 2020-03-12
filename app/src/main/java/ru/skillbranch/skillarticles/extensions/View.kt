@@ -14,3 +14,7 @@ fun View.setMarginOptionally(left:Int = marginLeft, top : Int = marginTop, right
         this@setMarginOptionally.layoutParams = params
     }
 }
+
+fun View.setPaddingOptionally(left:Int = marginLeft, top : Int = marginTop, right : Int = marginRight, bottom : Int = marginBottom){
+    this.setPadding(left, top, right, bottom)
+}

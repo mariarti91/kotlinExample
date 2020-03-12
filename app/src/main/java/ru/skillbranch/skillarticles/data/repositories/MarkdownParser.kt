@@ -14,20 +14,32 @@ object MarkdownParser {
     private const val STRIKE_GROUP = "((?<!~)~{2}[^~].*?[^~]?~{2}(?!~))"
     private const val RULE_GROUP = "(^-{3}|_{3}|\\*{3}$)"
     private const val INLINE_GROUP = "((?<!`)`{1}[^\\s`][^\n`]*?`{1}(?!`))"
-    private const val LINK_GROUP = "(\\[.+?]\\(.+?\\))"
+    private const val LINK_GROUP = "(\\[[^\\[\\]]*?\\(.+?\\))"
     private const val ORDERED_LIST_ITEM_GROUP = "(^\\d+\\. .+$)"
-    private const val BLOCK_CODE_GROUP = "(^`{3}[^`]*`{3}$)"
+    private const val BLOCK_CODE_GROUP = "(^`{3}[\\s\\S]+?`{3}$)"
+    private const val IMAGE_GROUP = "(^!\\[[^\\[\\]]*?\\(.*?\\)$)"
 
     private const val MARKDOWN_GROUPS = "$UNORDERED_LIST_ITEM_GROUP|$HEADER_GROUP|$QUOTE_GROUP" +
             "|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|$RULE_GROUP|$INLINE_GROUP|$LINK_GROUP" +
-            "|$ORDERED_LIST_ITEM_GROUP|$BLOCK_CODE_GROUP"
+            "|$ORDERED_LIST_ITEM_GROUP|$BLOCK_CODE_GROUP|$IMAGE_GROUP"
 
     private val elementsPattern by lazy { Pattern.compile(MARKDOWN_GROUPS, Pattern.MULTILINE) }
 
-    fun parse(string: String): MarkdownText {
+    fun parse(string: String): List<MarkdownElement> {
         val elements = mutableListOf<Element>()
         elements.addAll(findElements(string))
-        return MarkdownText(elements)
+        return elements.fold(mutableListOf()){ acc, el ->
+            val last = acc.lastOrNull()
+            when(el){
+                is Element.Image -> acc.add(MarkdownElement.Image(el, last?.bounds?.second ?: 0))
+                is Element.BlockCode -> acc.add(MarkdownElement.Scroll(el, last?.bounds?.second ?: 0))
+                else -> {
+                    if(last is MarkdownElement.Text) last.elements.add(el)
+                    else acc.add(MarkdownElement.Text(mutableListOf(el), last?.bounds?.second ?: 0))
+                }
+            }
+            acc
+        }
     }
 
     fun clear(string: String?):String? {
@@ -64,7 +76,7 @@ object MarkdownParser {
 
             var text: CharSequence
 
-            val groups = 1..11
+            val groups = 1..12
             var group = -1
             for(gr in groups){
                 if(matcher.group(gr) != null){
@@ -178,23 +190,18 @@ object MarkdownParser {
                 //CODE BLOCK
                 11 -> {
                     text = string.subSequence(startIndex.plus(3), endIndex.minus(3))
+                    val element = Element.BlockCode(text)
+                    parents.add(element)
+                    lastStartIndex = endIndex
+                }
 
-                    if(text.contains(LINE_SEPARATOR)){
-                        for((index, line) in text.lines().withIndex()){
-                            when(index){
-                                text.lines().lastIndex -> parents.add(
-                                        Element.BlockCode(Element.BlockCode.Type.END, line)
-                                )
-                                0 -> parents.add(
-                                        Element.BlockCode(Element.BlockCode.Type.START, line + LINE_SEPARATOR)
-                                )
-                                else -> parents.add(
-                                        Element.BlockCode(Element.BlockCode.Type.MIDDLE, line + LINE_SEPARATOR)
-                                )
-                            }
-                        }
-                    }else parents.add(Element.BlockCode(Element.BlockCode.Type.SINGLE, text))
-
+                //IMAGE
+                12 -> {
+                    text = string.subSequence(startIndex, endIndex)
+                    val (alt, url, title) = "^!\\[([^\\[\\]]*?)?]\\((.*?) \"(.*?)\"\\)$".toRegex()
+                            .find(text)!!.destructured
+                    val element = Element.Image(url, alt, text)
+                    parents.add(element)
                     lastStartIndex = endIndex
                 }
             }
@@ -210,29 +217,45 @@ object MarkdownParser {
     }
 }
 
-private fun Element.spread(): List<Element> {
-    val elements = mutableListOf<Element>()
-    elements.add(this)
-    elements.addAll(this.elements.spread())
-    return elements
-}
-
-private fun List<Element>.spread():List<Element>{
-    val elements = mutableListOf<Element>()
-    if(this.isNotEmpty()) elements.addAll(
-            this.fold(mutableListOf()){acc, el -> acc.also { it.addAll(el.spread()) }}
-    )
-    return elements
-}
-
 data class MarkdownText(
         val elements:List<Element>
 )
 
+sealed class MarkdownElement(){
+    abstract val offset: Int
+    val bounds: Pair<Int, Int> by lazy {
+        when(this){
+            is Text ->{
+                val end = elements.fold(offset){acc, el ->
+                    acc + el.spread().map { it.text.length }.sum()
+                }
+                offset to end
+            }
+            is Image -> offset to offset + image.text.length
+            is Scroll -> offset to offset + blockCode.text.length
+        }
+    }
+
+    data class Text(
+            val elements: MutableList<Element>,
+            override val offset: Int = 0
+    ): MarkdownElement()
+
+    data class Image(
+            val image: Element.Image,
+            override val offset: Int = 0
+    ): MarkdownElement()
+
+    data class Scroll(
+            val blockCode: Element.BlockCode,
+            override val offset: Int = 0
+    ): MarkdownElement()
+}
+
 sealed class Element(){
+
     abstract val text:CharSequence
     abstract val elements: List<Element>
-
     data class Text(
         override val text: CharSequence,
         override val elements: List<Element> = emptyList()
@@ -292,10 +315,55 @@ sealed class Element(){
     ) : Element()
 
     data class BlockCode(
-            val type: Type = Type.MIDDLE,
             override val text: CharSequence,
             override val elements: List<Element> = emptyList()
-    ) : Element() {
-        enum class Type { START, END, MIDDLE, SINGLE }
-    }
+    ) : Element()
+
+    data class Image(
+            val url: String,
+            val alt:String?,
+            override val text: CharSequence,
+            override val elements: List<Element> = emptyList()
+    ): Element()
+}
+
+private fun Element.spread(): List<Element> {
+//    val elements = mutableListOf<Element>()
+//    elements.add(this)
+//    elements.addAll(this.elements.spread())
+//    return elements
+
+    val elements = mutableListOf<Element>()
+    if(this.elements.isNotEmpty()) elements.addAll(this.elements.spread())
+    else elements.add(this)
+    return elements
+}
+
+private fun List<Element>.spread():List<Element>{
+    val elements = mutableListOf<Element>()
+//    if(this.isNotEmpty()) elements.addAll(
+//            this.fold(mutableListOf()){acc, el -> acc.also { it.addAll(el.spread()) }}
+//    )
+    forEach{ elements.addAll(it.spread()) }
+    return elements
+}
+
+private fun Element.clearContent() : String{
+    return StringBuilder().apply {
+        val element = this@clearContent
+        if(element.elements.isEmpty()) append(element.text)
+        else element.elements.forEach { append(it.clearContent()) }
+    }.toString()
+}
+
+fun List<MarkdownElement>.clearContent() : String {
+    return StringBuilder().apply {
+        this@clearContent.forEach {
+            when(it){
+                is MarkdownElement.Text -> it.elements.forEach { el -> append(el.clearContent())}
+                is MarkdownElement.Image -> append(it.image.clearContent())
+                is MarkdownElement.Scroll -> append(it.blockCode.clearContent())
+            }
+        }
+    }.toString()
 }
