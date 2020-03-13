@@ -14,10 +14,10 @@ object MarkdownParser {
     private const val STRIKE_GROUP = "((?<!~)~{2}[^~].*?[^~]?~{2}(?!~))"
     private const val RULE_GROUP = "(^-{3}|_{3}|\\*{3}$)"
     private const val INLINE_GROUP = "((?<!`)`{1}[^\\s`][^\n`]*?`{1}(?!`))"
-    private const val LINK_GROUP = "(\\[[^\\[\\]]*?\\(.+?\\))"
+    private const val LINK_GROUP = "(\\[[^\\[\\]]+?\\]\\(\\S*?\\))"
     private const val ORDERED_LIST_ITEM_GROUP = "(^\\d+\\. .+$)"
     private const val BLOCK_CODE_GROUP = "(^`{3}[\\s\\S]+?`{3}$)"
-    private const val IMAGE_GROUP = "(^!\\[[^\\[\\]]*?\\(.*?\\)$)"
+    private const val IMAGE_GROUP = "(^!\\[[^\\[\\]]*?\\]\\(.*\\)$)"
 
     private const val MARKDOWN_GROUPS = "$UNORDERED_LIST_ITEM_GROUP|$HEADER_GROUP|$QUOTE_GROUP" +
             "|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|$RULE_GROUP|$INLINE_GROUP|$LINK_GROUP" +
@@ -200,7 +200,7 @@ object MarkdownParser {
                     text = string.subSequence(startIndex, endIndex)
                     val (alt, url, title) = "^!\\[([^\\[\\]]*?)?]\\((.*?) \"(.*?)\"\\)$".toRegex()
                             .find(text)!!.destructured
-                    val element = Element.Image(url, alt, text)
+                    val element = Element.Image(url, alt, title)
                     parents.add(element)
                     lastStartIndex = endIndex
                 }
@@ -328,11 +328,6 @@ sealed class Element(){
 }
 
 private fun Element.spread(): List<Element> {
-//    val elements = mutableListOf<Element>()
-//    elements.add(this)
-//    elements.addAll(this.elements.spread())
-//    return elements
-
     val elements = mutableListOf<Element>()
     if(this.elements.isNotEmpty()) elements.addAll(this.elements.spread())
     else elements.add(this)
@@ -341,9 +336,6 @@ private fun Element.spread(): List<Element> {
 
 private fun List<Element>.spread():List<Element>{
     val elements = mutableListOf<Element>()
-//    if(this.isNotEmpty()) elements.addAll(
-//            this.fold(mutableListOf()){acc, el -> acc.also { it.addAll(el.spread()) }}
-//    )
     forEach{ elements.addAll(it.spread()) }
     return elements
 }
