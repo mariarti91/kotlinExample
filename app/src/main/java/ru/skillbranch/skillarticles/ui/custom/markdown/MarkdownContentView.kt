@@ -103,7 +103,12 @@ class MarkdownContentView @JvmOverloads constructor(
                 }
 
                 is MarkdownElement.Scroll -> {
-
+                    val cv = MarkdownCodeView(
+                            context,
+                            textSize,
+                            it.blockCode.text
+                    )
+                    addView(cv)
                 }
             }
         }
