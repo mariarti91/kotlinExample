@@ -75,7 +75,7 @@ class MarkdownContentView @JvmOverloads constructor(
 
     fun setContent(content: List<MarkdownElement>) {
         elements = content
-        content.forEach {
+        content.forEachIndexed() {index, it ->
             when(it){
                 is MarkdownElement.Text -> {
                     val tv = MarkdownTextView(context, textSize).apply{
@@ -88,6 +88,7 @@ class MarkdownContentView @JvmOverloads constructor(
                             .run{
                                 tv.setText(this, TextView.BufferType.SPANNABLE)
                             }
+                    tv.id = index
                     addView(tv)
                 }
 
@@ -99,6 +100,7 @@ class MarkdownContentView @JvmOverloads constructor(
                             it.image.text,
                             it.image.alt
                     )
+                    iv.id = index
                     addView(iv)
                 }
 
@@ -108,6 +110,7 @@ class MarkdownContentView @JvmOverloads constructor(
                             textSize,
                             it.blockCode.text
                     )
+                    cv.id = index
                     addView(cv)
                 }
             }
