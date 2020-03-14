@@ -16,7 +16,11 @@ import ru.skillbranch.skillarticles.extensions.dpToIntPx
 @SuppressLint("ViewConstructor", "AppCompatCustomView")
 class MarkdownTextView constructor(
         context: Context,
-        fontSize: Float): TextView(context, null, 0), IMarkdownView {
+        fontSize: Float,
+        mockHelper: SearchBgHelper? = null
+): TextView(context, null, 0), IMarkdownView {
+
+    constructor(context: Context, fontSize: Float) : this(context, fontSize, null)
 
     override var fontSize: Float = fontSize
         set(value) {
@@ -30,12 +34,16 @@ class MarkdownTextView constructor(
     override val spannableContent: Spannable
         get() = text as Spannable
 
-    private val searchBgHelper = SearchBgHelper(context){ top, bottom ->
+    private var searchBgHelper = SearchBgHelper(context){ top, bottom ->
         focusRect.set(0, top - context.dpToIntPx(56), width, bottom + context.dpToIntPx(56))
         requestRectangleOnScreen(focusRect, false)
     }
 
     init{
+        searchBgHelper = mockHelper?: SearchBgHelper(context){ top, bottom ->
+            focusRect.set(0, top - context.dpToIntPx(56), width, bottom + context.dpToIntPx(56))
+            requestRectangleOnScreen(focusRect, false)
+        }
         setTextColor(color)
         textSize = fontSize
         movementMethod = LinkMovementMethod.getInstance()

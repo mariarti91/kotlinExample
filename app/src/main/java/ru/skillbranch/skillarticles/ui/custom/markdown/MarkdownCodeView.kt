@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.text.Selection
 import android.text.Spannable
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +19,7 @@ import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.attrValue
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
 import ru.skillbranch.skillarticles.extensions.dpToPx
+import ru.skillbranch.skillarticles.extensions.setPaddingOptionally
 
 @SuppressLint("ViewConstructor")
 class MarkdownCodeView private constructor(
@@ -86,11 +88,15 @@ class MarkdownCodeView private constructor(
         tv_codeView = MarkdownTextView(context, fontSize * 0.85f).apply {
             typeface = Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL)
             setTextColor(textColor)
-//            setPaddingOptionally(right = textExtraPadding)
+            setPaddingOptionally(right = textExtraPadding)
+            isFocusable = true
+            isFocusableInTouchMode = true
         }
 
         sv_scroll = object : HorizontalScrollView(context){
-            //TODO custom scroll view
+            override fun getLeftFadingEdgeStrength(): Float {
+                return 0f
+            }
         }.apply {
             overScrollMode = View.OVER_SCROLL_NEVER
             isHorizontalFadingEdgeEnabled = true
@@ -193,14 +199,21 @@ class MarkdownCodeView private constructor(
     }
 
     override fun renderSearchPosition(searchPosition: Pair<Int, Int>, offset: Int) {
-        //TODO implement me
+        super.renderSearchPosition(searchPosition, offset)
+        if((parent as ViewGroup).hasFocus() && !tv_codeView.hasFocus()) tv_codeView.requestFocus()
+        Selection.setSelection(spannableContent, searchPosition.first.minus(offset))
     }
 
     private fun toggleColors() {
-        //TODO implement me
+        isManual = true
+        isDark = !isDark
+        applyColors()
     }
 
     private fun applyColors() {
-        //TODO implement me
+        iv_switch.imageTintList = ColorStateList.valueOf(textColor)
+        iv_copy.imageTintList = ColorStateList.valueOf(textColor)
+        (background as GradientDrawable).color = ColorStateList.valueOf(bgColor)
+        tv_codeView.setTextColor(textColor)
     }
 }

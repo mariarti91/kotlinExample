@@ -7,13 +7,18 @@ apply plugin: 'kotlin-android-extensions'
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
     defaultConfig {
         applicationId "ru.skillbranch.skillarticles"
         minSdkVersion 23
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        //testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "ru.skillbranch.skillarticles.CustomTestRunner"
     }
     buildTypes {
         release {
@@ -49,5 +54,6 @@ dependencies {
     androidTestImplementation 'androidx.test:rules:1.2.0'
     androidTestImplementation 'com.jraska.livedata:testing-ktx:1.1.1'
     androidTestImplementation "androidx.arch.core:core-testing:2.0.0"
+    androidTestImplementation 'com.github.tmurakami:dexopener:2.0.4'
 
 }
