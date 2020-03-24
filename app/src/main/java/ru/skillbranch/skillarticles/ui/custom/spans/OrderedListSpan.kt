@@ -27,7 +27,7 @@ class OrderedListSpan(
         lineTop: Int, lineBaseline: Int, lineBottom: Int, text: CharSequence?, lineStart: Int,
         lineEnd: Int, isFirstLine: Boolean, layout: Layout?
     ) {
-        paint.forText {
+        if(isFirstLine) paint.forText {
             canvas.drawText(order, currentMarginLocation + gapWidth, lineBaseline.toFloat(), paint)
         }
     }
