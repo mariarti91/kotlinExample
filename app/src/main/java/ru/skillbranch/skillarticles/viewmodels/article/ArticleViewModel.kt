@@ -1,7 +1,5 @@
-package ru.skillbranch.skillarticles.viewmodels
+package ru.skillbranch.skillarticles.viewmodels.article
 
-import android.os.Bundle
-import androidx.core.os.bundleOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.SavedStateHandle
 import ru.skillbranch.skillarticles.data.ArticleData
@@ -21,8 +19,10 @@ class ArticleViewModel(
     handle: SavedStateHandle,
     private val articleId: String
 )
-    : BaseViewModel<ArticleState>(handle, ArticleState())
-    , IArticleViewModel{
+    : BaseViewModel<ArticleState>(handle,
+    ArticleState()
+)
+    , IArticleViewModel {
 
     private val repository = ArticleRepository
     private var clearContent: String? = null
