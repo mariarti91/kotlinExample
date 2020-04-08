@@ -78,6 +78,9 @@ class MarkdownImageView private constructor(
         strokeWidth = 0f
     }
 
+    private var isOpen = false
+    private var aspectRation = 0f
+
     init {
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
         iv_image = ImageView(context).apply {
@@ -136,20 +139,32 @@ class MarkdownImageView private constructor(
         addView(tv_alt)
         iv_image.setOnClickListener {
             if(tv_alt?.isVisible == true) animateHideAlt() else animateShowAlt()
+            isOpen = !isOpen
         }
     }
 
     override fun onSaveInstanceState(): Parcelable? {
         val savedState = SavedState(super.onSaveInstanceState())
-        savedState.isImageClicked = tv_alt?.isVisible ?: false
+        savedState.ssIsOpen = isOpen
+        savedState.ssAspectRation = (iv_image.width.toFloat() / iv_image.height)
         return savedState
     }
 
     override fun onRestoreInstanceState(state: Parcelable) {
         super.onRestoreInstanceState(state)
         if(state is SavedState){
-            tv_alt?.isVisible = state.isImageClicked
+            isOpen = state.ssIsOpen
+            aspectRation = state.ssAspectRation
+            tv_alt?.isVisible = isOpen
         }
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        Glide.with(context)
+            .load(imageUrl)
+            .transform(AspectRatioResizeTransform())
+            .into(iv_image)
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
@@ -158,6 +173,11 @@ class MarkdownImageView private constructor(
         val width = View.getDefaultSize(suggestedMinimumWidth, widthMeasureSpec)
 
         val ms = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY)
+
+        if(aspectRation != 0f){
+            val hms = MeasureSpec.makeMeasureSpec((width / aspectRation).toInt(), MeasureSpec.EXACTLY)
+            iv_image.measure(ms, hms)
+        } else iv_image.measure(ms, heightMeasureSpec)
 
         iv_image.measure(ms, heightMeasureSpec)
         tv_title.measure(ms, heightMeasureSpec)
@@ -249,17 +269,20 @@ class MarkdownImageView private constructor(
     }
 
     private class SavedState : BaseSavedState, Parcelable{
-        var isImageClicked = false
+        var ssIsOpen = false
+        var ssAspectRation = 0f
 
         constructor(superState: Parcelable?): super(superState)
 
         constructor(src:Parcel) : super(src){
-            isImageClicked = src.readInt() == 1
+            ssIsOpen = src.readInt() == 1
+            ssAspectRation = src.readFloat();
         }
 
         override fun writeToParcel(out: Parcel, flags: Int) {
             super.writeToParcel(out, flags)
-            out.writeInt(if(isImageClicked) 1 else 0)
+            out.writeInt(if(ssIsOpen) 1 else 0)
+            out.writeFloat(ssAspectRation)
         }
 
         override fun describeContents(): Int = 0
