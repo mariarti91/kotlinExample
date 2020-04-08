@@ -1,4 +1,5 @@
 package ru.skillbranch.skillarticles.data.delegates
+import kotlinx.android.synthetic.main.item_article.*
 
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
