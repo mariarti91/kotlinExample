@@ -21,6 +21,7 @@ import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
 import ru.skillbranch.skillarticles.extensions.format
 import ru.skillbranch.skillarticles.ui.base.Binding
+import ru.skillbranch.skillarticles.ui.base.ToolbarBuilder
 import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
@@ -37,6 +38,11 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     override val layout: Int = R.layout.fragment_article
     override val binding: ArticleBinding by lazy { ArticleBinding() }
 
+    override val prepareToolbar: (ToolbarBuilder.() -> Unit) = {
+        setTitle(args.title)
+        setSubtitle(args.category)
+        setLogo(args.categoryIcon)
+    }
     override fun setupViews() {
         setupBottomBar()
         setupSubmenu()

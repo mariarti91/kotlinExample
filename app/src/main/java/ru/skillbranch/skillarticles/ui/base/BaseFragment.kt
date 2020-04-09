@@ -17,6 +17,8 @@ abstract class BaseFragment<T: BaseViewModel<out IViewModelState>> : Fragment() 
     protected abstract val viewModel: T
     protected abstract val layout: Int
 
+    open val prepareToolbar : (ToolbarBuilder.()->Unit)? = null
+
     abstract fun setupViews()
 
     override fun onCreateView(
@@ -27,6 +29,11 @@ abstract class BaseFragment<T: BaseViewModel<out IViewModelState>> : Fragment() 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        //setup toolbar
+        root.toolbarBuilder
+                .prepare(prepareToolbar)
+                .build(root)
 
         //restore state
         viewModel.restoreState()
