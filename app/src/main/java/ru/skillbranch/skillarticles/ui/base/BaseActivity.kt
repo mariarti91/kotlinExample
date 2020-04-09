@@ -1,13 +1,16 @@
 package ru.skillbranch.skillarticles.ui.base
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.MenuItem
+import android.view.View
 import android.widget.ImageView
 import android.widget.Toolbar
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources.getDrawable
 import androidx.core.view.children
+import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -27,6 +30,7 @@ abstract class BaseActivity<T: BaseViewModel<out IViewModelState>> : AppCompatAc
     lateinit var navController: NavController
 
     val toolbarBuilder = ToolbarBuilder()
+    val bottombarBuilder = BottombarBuilder()
 
     abstract fun subscribeOnState(state: IViewModelState)
     abstract fun renderNotification(notify: Notify)
@@ -98,7 +102,6 @@ class ToolbarBuilder(){
     }
 
     fun prepare(prepareFn: (ToolbarBuilder.()-> Unit)?): ToolbarBuilder{
-        invalidate()
         prepareFn?.invoke(this)
         return this
     }
@@ -144,3 +147,55 @@ data class MenuItemHolder(
         val actionViewLayout:Int,
         val clickListener:((MenuItem)->Unit)? = null
 )
+
+class BottombarBuilder(){
+    private var visible:Boolean = true
+    private val views = mutableListOf<Int>()
+    private val tempViews = mutableListOf<Int>()
+
+    fun addView(layoutId: Int) : BottombarBuilder{
+        views.add(layoutId)
+        return this
+    }
+
+    fun setVisibility(isVisible:Boolean) : BottombarBuilder{
+        visible = isVisible
+        return this
+    }
+
+    fun prepare(prepareFn: (BottombarBuilder.() -> Unit)?) : BottombarBuilder{
+        prepareFn?.invoke(this)
+        return this
+    }
+
+    fun invalidate() : BottombarBuilder{
+        visible = true
+        views.clear()
+        return this
+    }
+
+    fun build(context: FragmentActivity){
+
+        if(tempViews.isNotEmpty()){
+            tempViews.forEach {
+                val view = context.container.findViewById<View>(it)
+                context.container.removeView(view)
+            }
+            tempViews.clear()
+        }
+
+        if(views.isNotEmpty()){
+            val infalter = LayoutInflater.from(context)
+            views.forEach {
+                val view = infalter.inflate(it, context.container, false)
+                context.container.addView(view)
+                tempViews.add(view.id)
+            }
+        }
+
+        with(context.nav_view){
+            isVisible = visible
+
+        }
+    }
+}
