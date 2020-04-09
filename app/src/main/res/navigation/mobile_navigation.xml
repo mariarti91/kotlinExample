@@ -8,12 +8,42 @@
     <fragment
         android:id="@+id/page_article"
         android:name="ru.skillbranch.skillarticles.ui.article.ArticleFragment"
-        android:label="ArticleFragment" />
+        android:label="ArticleFragment" >
+        <argument
+            android:name="article_id"
+            app:argType="string"
+            android:defaultValue="-1" />
+        <argument
+            android:name="author"
+            app:argType="string" />
+        <argument
+            android:name="author_avatar"
+            app:argType="string" />
+        <argument
+            android:name="category"
+            app:argType="string" />
+        <argument
+            android:name="category_icon"
+            app:argType="string" />
+        <argument
+            android:name="poster"
+            app:argType="string" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <argument
+            android:name="date"
+            app:argType="java.util.Date" />
+    </fragment>
     <fragment
         android:id="@+id/nav_articles"
         android:name="ru.skillbranch.skillarticles.ui.articles.ArticlesFragment"
         android:label="@string/title_articles"
-        tools:layout="@layout/fragment_articles" />
+        tools:layout="@layout/fragment_articles" >
+        <action
+            android:id="@+id/action_nav_articles_to_page_article"
+            app:destination="@id/page_article" />
+    </fragment>
     <fragment
         android:id="@+id/nav_bookmarks"
         android:name="ru.skillbranch.skillarticles.ui.bookmarks.BookmarksFragment"
@@ -29,5 +59,4 @@
         android:name="ru.skillbranch.skillarticles.ui.transcriptions.TranscriptionsFragment"
         android:label="@string/title_transcriptions"
         tools:layout="@layout/fragment_transcriptions" />
-
 </navigation>
