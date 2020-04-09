@@ -9,6 +9,7 @@ import android.widget.Toolbar
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources.getDrawable
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
@@ -16,6 +17,7 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions.circleCropTransform
+import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import kotlinx.android.synthetic.main.activity_root.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
@@ -107,6 +109,9 @@ class ToolbarBuilder(){
     }
 
     fun build(context: FragmentActivity){
+
+        context.appbar.setExpanded(true, true)
+
         with(context.toolbar){
             if(this@ToolbarBuilder.title != null) title = this@ToolbarBuilder.title
             subtitle = this@ToolbarBuilder.subtitle
@@ -196,6 +201,9 @@ class BottombarBuilder(){
         with(context.nav_view){
             isVisible = visible
 
+            //show bottombar if hidden
+            ((layoutParams as CoordinatorLayout.LayoutParams).behavior as HideBottomViewOnScrollBehavior)
+                    .slideUp(this)
         }
     }
 }
