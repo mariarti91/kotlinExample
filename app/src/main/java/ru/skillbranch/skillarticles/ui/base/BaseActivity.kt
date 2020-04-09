@@ -10,6 +10,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources.getDrawable
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.os.bundleOf
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
@@ -23,6 +24,7 @@ import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
+import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
 
 abstract class BaseActivity<T: BaseViewModel<out IViewModelState>> : AppCompatActivity(){
@@ -43,6 +45,7 @@ abstract class BaseActivity<T: BaseViewModel<out IViewModelState>> : AppCompatAc
         setSupportActionBar(toolbar)
         viewModel.observeState(this){ subscribeOnState(it) }
         viewModel.observeNotifications(this){ renderNotification(it) }
+        viewModel.observeNavigations(this){ subscribeOnNavigation(it) }
 
         navController = findNavController(R.id.nav_host_fragment)
     }
@@ -59,6 +62,29 @@ abstract class BaseActivity<T: BaseViewModel<out IViewModelState>> : AppCompatAc
 
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
+    private fun subscribeOnNavigation(command: NavigationCommand){
+        when(command){
+            is NavigationCommand.To ->{
+                navController.navigate(
+                        command.destination,
+                        command.args,
+                        command.options,
+                        command.extras
+                )
+            }
+            is NavigationCommand.FinishLogin ->{
+                navController.navigate(R.id.finish_login)
+                if(command.privateDestination!=null) navController.navigate(command.privateDestination)
+            }
+            is NavigationCommand.StartLogin ->{
+                navController.navigate(
+                        R.id.start_login,
+                        bundleOf("private_destination" to (command.privateDestination ?: -1))
+                )
+            }
+        }
     }
 }
 

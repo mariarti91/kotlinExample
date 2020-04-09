@@ -58,6 +58,10 @@ abstract class BaseFragment<T: BaseViewModel<out IViewModelState>> : Fragment() 
             root.renderNotification(it)
         }
 
+        viewModel.observeNavigations(viewLifecycleOwner){
+            root.viewModel.navigate(it)
+        }
+
         setupViews()
     }
 

@@ -14,6 +14,7 @@ import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesState
 import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
+import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 
 class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
     override val viewModel: ArticlesViewModel by viewModels()
@@ -33,7 +34,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
                 item.date
         )
 
-        findNavController().navigate(direction)
+        viewModel.navigate(NavigationCommand.To(direction.actionId, direction.arguments))
     }
 
     override fun setupViews() {
