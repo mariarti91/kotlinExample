@@ -19,6 +19,7 @@ import androidx.navigation.findNavController
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions.circleCropTransform
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
+import kotlinx.android.synthetic.*
 import kotlinx.android.synthetic.main.activity_root.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
@@ -213,6 +214,7 @@ class BottombarBuilder(){
                 context.container.removeView(view)
             }
             tempViews.clear()
+            context.clearFindViewByIdCache()
         }
 
         if(views.isNotEmpty()){
